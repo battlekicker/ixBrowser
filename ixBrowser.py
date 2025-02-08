@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 
 from loguru import logger
 from playwright.async_api import async_playwright, expect
@@ -57,28 +58,36 @@ async def start(client, profile_id):
         logger.critical("Error opening profile")
 
 
-async def save_cookie(client, profile_id, file):
+async def save_cookie(client, profile_id, file, rewrite):
     cookies = client.get_profile_cookie(profile_id)
     cookies = json.loads(cookies)
+    if rewrite:
+        await rewrite_file(cookies, file)
+    else:
+        await add_to_file(cookies, file)
+    logger.info(f'Profile ID: {profile_id} | Cookie saved in file "{file}".')
+
+
+async def rewrite_file(cookies, file):
+    logger.info(f'Rewriting file "{file}".')
     with open(file, 'w') as outfile:
         for cookie in cookies:
             cookie_str = json.dumps(cookie)
             outfile.writelines(cookie_str + ',\n')
 
-    # if os.path.exists(file):
-    #     with open(file, 'a') as outfile:
-    #         for cookie in cookies:
-    #             outfile.write(',')
-    #             cookie_str = json.dumps(cookie)
-    #             outfile.write(cookie_str)
-    # else:
-    #     with open(file, 'w') as outfile:
-    #         for cookie in cookies:
-    #             cookie_str = json.dumps(cookie)
-    #             outfile.write(cookie_str)
-    #             outfile.write(',')
 
-    logger.info(f'Profile ID: {profile_id} | Cookie saved in file "{file}".')
+async def add_to_file(cookies, file):
+    logger.info(f'Adding to file "{file}".')
+    if os.path.exists(file):
+        with open(file, 'a') as outfile:
+            for cookie in cookies:
+                cookie_str = json.dumps(cookie)
+                outfile.writelines(cookie_str + ',\n')
+    else:
+        with open(file, 'w') as outfile:
+            for cookie in cookies:
+                cookie_str = json.dumps(cookie)
+                outfile.writelines(cookie_str + ',\n')
 
 
 async def get_cookie(file):

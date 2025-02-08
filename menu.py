@@ -14,15 +14,12 @@ print('___________________________\n'
       '___________________________\n')
 
 
-
-
 c = IXBrowserClient()
 data = c.get_profile_list()
-# c.clear_profile_cache_and_cookies(PROFILE_ID)
 if data is None:
     logger.error('Get profile list error. \n'
-                 f'Error code={c.code}'
-                 f'Error message={c.message}')
+                 f'Error code: {c.code}'
+                 f'Error message: {c.message}')
 else:
     while True:
         choice = int(input('Выберите номер пункта: '))
@@ -31,7 +28,18 @@ else:
         if choice == 1:
             asyncio.run(start(client=c, profile_id=1))
         elif choice == 2:
-            asyncio.run(save_cookie(client=c, profile_id=1, file="data.txt"))
+            print('___________________________\n'
+                  '1. Перезаписать файл с cookie\n'
+                  '2. Добавить cookie в файл\n'
+                  '___________________________\n')
+            choice = int(input('Выберите номер пункта: '))
+            print('___________________________\n')
+
+            if choice == 1:
+                asyncio.run(save_cookie(client=c, profile_id=1, file="data.txt", rewrite=True))
+            elif choice == 2:
+                asyncio.run(save_cookie(client=c, profile_id=1, file="data.txt", rewrite=False))
+
         elif choice == 3:
             asyncio.run(print_cookie(file="data.txt"))
         elif choice == 4:
