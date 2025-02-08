@@ -56,20 +56,28 @@ async def start(ws_endpoint: str):
 
 
 async def save_cookie(client, file):
-    cookie = client.get_profile_cookie(PROFILE_ID)
-    cookie = json.loads(cookie)
-    if os.path.exists(file):
-        with open(file, 'a') as outfile:
-            outfile.write(',')
-            cookie_str = json.dumps(cookie[0])
-            outfile.write(cookie_str)
-    else:
-        with open(file, 'w') as outfile:
-            cookie_str = json.dumps(cookie[0])
-            outfile.write(cookie_str)
+    cookies = client.get_profile_cookie(PROFILE_ID)
+    cookies = json.loads(cookies)
+    with open(file, 'w') as outfile:
+        for cookie in cookies:
+            cookie_str = json.dumps(cookie)
+            outfile.writelines(cookie_str + ',\n')
+
+    # if os.path.exists(file):
+    #     with open(file, 'a') as outfile:
+    #         for cookie in cookies:
+    #             outfile.write(',')
+    #             cookie_str = json.dumps(cookie)
+    #             outfile.write(cookie_str)
+    # else:
+    #     with open(file, 'w') as outfile:
+    #         for cookie in cookies:
+    #             cookie_str = json.dumps(cookie)
+    #             outfile.write(cookie_str)
+    #             outfile.write(',')
 
     logger.info(f'Cookie saved in file "{file}".')
-    #pprint.pp(cookie[0])
+    #pprint.pp(cookie)
 
 
 async def get_cookie(file):
@@ -79,6 +87,7 @@ async def get_cookie(file):
 
 
 c = IXBrowserClient()
+
 data = c.get_profile_list()
 # c.clear_profile_cache_and_cookies(PROFILE_ID)
 if data is None:
@@ -103,12 +112,15 @@ else:
         c.close_profile(PROFILE_ID)
     else:
         logger.critical("Error opening profile")
-    logger.info(f'Profile ID: {PROFILE2_ID} | Cookie: \n'
-                f'{c.get_profile_cookie(PROFILE2_ID)}')
+
 
     # Работа со вторым профилем
+    #c.clear_profile_cache_and_cookies(PROFILE2_ID)
+    logger.info(f'Profile ID: {PROFILE2_ID} | Cookie: \n'
+                f'{c.get_profile_cookie(PROFILE2_ID)}')
     cookie = asyncio.run(get_cookie(FILE))
     cookie = str(cookie).replace("['", "[").replace("']", "]").replace("\\n', '", " ")
+    cookie = cookie.replace(',\\n', '')
     if cookie != '':
         c.update_profile_cookie(PROFILE2_ID, cookie)
         logger.info(f'Profile ID: {PROFILE2_ID} | Cookie updated.')
