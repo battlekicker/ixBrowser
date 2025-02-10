@@ -5,13 +5,15 @@ from loguru import logger
 
 from ixBrowser import start, save_cookie, print_cookie, update_profile_cookie
 
-print('___________________________\n'
-      '1. Нагулять куки\n'
-      '2. Сохранить cookie в файл\n'
-      '3. Вывести содержимое файла с cookie\n'
-      '4. Заменить cookie профиля содержимым файла\n'
-      '5. Завершить работу\n'
-      '___________________________\n')
+
+def menu_text():
+    print('___________________________\n'
+          '1. Нагулять куки\n'
+          '2. Сохранить cookie в файл\n'
+          '3. Вывести содержимое файла с cookie\n'
+          '4. Заменить cookie профиля содержимым файла\n'
+          '5. Завершить работу\n'
+          '___________________________\n')
 
 
 c = IXBrowserClient()
@@ -22,6 +24,7 @@ if data is None:
                  f'Error message: {c.message}')
 else:
     while True:
+        menu_text()
         choice = int(input('Выберите номер пункта: '))
         print('___________________________\n')
 

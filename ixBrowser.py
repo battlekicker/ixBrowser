@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import re
 
 from loguru import logger
 from playwright.async_api import async_playwright, expect
@@ -92,8 +93,15 @@ async def add_to_file(cookies, file):
 
 async def get_cookie(file):
     with open(file, 'r') as f:
-        cookie = f.readlines()
-    return cookie
+        raw_data = f.read()
+    # Оборачиваем JSON-объекты в список
+    json_str = f"[{raw_data.strip()}]"
+    # Убираем лишние `\n`
+    json_str = json_str.replace("\n", "")
+    # Удаляем лишнюю запятую перед `]` (если есть)
+    json_str = re.sub(r",\s*]$", "]", json_str)
+
+    return json_str
 
 
 async def print_cookie(file):
@@ -106,10 +114,9 @@ async def update_profile_cookie(client, profile_id, file):
     logger.info(f'Profile ID: {profile_id} | Cookie: \n'
                 f'{client.get_profile_cookie(PROFILE2_ID)}')
     cookie = await get_cookie(file)
-    cookie = str(cookie).replace("['", "[").replace("']", "]").replace("\\n', '", " ")
-    cookie = cookie.replace(',\\n', '')
     if cookie != '':
-        print(client.update_profile_cookie(profile_id, cookie))
+        rs = client.update_profile_cookie(profile_id, cookie)
+        print(rs)
         logger.info(f'Profile ID: {profile_id} | Cookie updated.')
         logger.info(f'Profile ID: {profile_id} | Cookie: \n'
                     f'{client.get_profile_cookie(profile_id)}')
